@@ -1,0 +1,84 @@
+apiVersion: v1
+data:
+  dynamic-plugins.yaml: |-
+    includes:
+      - dynamic-plugins.default.yaml
+
+    plugins: []
+kind: ConfigMap
+metadata:
+  name: dynamic-plugins-rhdh
+---
+apiVersion: v1
+data:
+  app-config.yaml: |
+    app:
+      title: My RHDH App
+
+    auth:
+      providers:
+        guest:
+          dangerouslyAllowOutsideDevelopment: true
+kind: ConfigMap
+metadata:
+  name: my-rhdh-app-config
+---
+apiVersion: v1
+data:
+  app-config-db.yaml: |
+    backend:
+      database:
+        client: pg
+        pluginDivisionMode: schema
+        connection:
+          database: ${POSTGRES_DB}
+          host: ${POSTGRES_HOST}
+          port: ${POSTGRES_PORT}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+kind: ConfigMap
+metadata:
+  name: my-rhdh-db-config
+---
+apiVersion: v1
+data:
+  FOO: YmFy
+kind: Secret
+metadata:
+  name: my-rhdh-secrets
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rhdh-database-secret
+stringData:
+  POSTGRES_DB: rhdh
+  POSTGRES_HOST: my-postgres.postgres.svc
+  POSTGRES_PASSWORD: changeme
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: rhdh_user
+type: Opaque
+---
+apiVersion: rhdh.redhat.com/v1alpha3
+kind: Backstage
+metadata:
+  name: my-rhdh
+spec:
+  application:
+    appConfig:
+      configMaps:
+      - name: my-rhdh-app-config
+      - name: my-rhdh-db-config
+      mountPath: /opt/app-root/src
+    dynamicPluginsConfigMapName: dynamic-plugins-rhdh
+    extraEnvs:
+      secrets:
+      - name: my-rhdh-secrets
+      - name: rhdh-database-secret
+    extraFiles:
+      mountPath: /opt/app-root/src
+    route:
+      enabled: true
+  database:
+    enableLocalDb: false

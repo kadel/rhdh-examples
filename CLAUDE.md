@@ -4,49 +4,83 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Purpose
 
-This repository provides configuration examples for Red Hat Developer Hub (RHDH), demonstrating various deployment and plugin development 
-patterns.
+This repository provides configuration examples for Red Hat Developer Hub (RHDH), demonstrating various deployment patterns. It uses a Kustomize-based overlay system to reuse base configurations across examples.
 
 ## Commands
 
 ```bash
-make generate              # Generate all README.md files from templates
-make verify                # Verify all README.md files are up to date (for CI)
-./generate.sh <dir>        # Generate README for a specific directory
-./generate.sh --verify     # Verify mode (returns non-zero if out of date)
+make all                   # Build examples and generate READMEs (primary command)
+make build                 # Build examples/ from _src/_overlays/ using Kustomize
+make generate              # Generate README.md files from templates
+make verify                # Verify README.md files are up to date
+make build-verify          # Verify examples/ is up to date
+make clean                 # Remove examples/ directory
+./_src/new-example.sh <name>   # Scaffold a new example overlay
 ```
 
 ## Architecture
 
-### Documentation Generation System
+### Directory Structure
 
-README.md files are generated from `.tmpl` templates using `generate.sh`. The template syntax uses `{{include:path}}` directives to inline actual YAML configuration files.
-
-**Flow:** `README.md.tmpl` → `generate.sh` → `README.md`
-
-Example template directive:
 ```
-{{include:operator/secret.yaml}}
+rhdh-examples/
+├── _src/                  # Source: All internal configuration
+│   ├── _base/             # Reusable base configurations
+│   │   ├── helm/          # Base Helm values and Kustomize resources
+│   │   └── operator/      # Base Backstage CR and Kustomize resources
+│   ├── _components/       # Optional reusable Kustomize components
+│   └── _overlays/         # Per-example customizations
+│       └── <example-name>/
+│           ├── README.md.tmpl # Documentation template
+│           ├── operator/
+│           │   ├── kustomization.yaml  # References ../../../_base/operator
+│           │   ├── patches/            # Strategic merge patches
+│           │   └── configs/            # Overlay-specific configs
+│           └── helm/
+│               ├── kustomization.yaml  # References ../../../_base/helm
+│               └── values-overlay.yaml # Merged with base values.yaml
+└── examples/              # Generated: Self-contained examples
+    └── <example-name>/
+        ├── README.md
+        ├── operator/
+        │   ├── resources.yaml      # kustomize build output
+        │   └── install.sh
+        └── helm/
+            ├── resources.yaml
+            ├── values.yaml         # Merged values
+            └── install.sh
 ```
 
-This ensures documentation always contains working, up-to-date configuration examples.
+### Source vs Generated
 
-### Example Structure Pattern
+| Directory | Type | Purpose |
+|-----------|------|---------|
+| `_src/` | Source | All internal source files |
+| `_src/_base/` | Source | Shared base configurations |
+| `_src/_components/` | Source | Optional reusable components |
+| `_src/_overlays/` | Source | Per-example customizations |
+| `examples/` | **Generated** | Self-contained examples (committed) |
 
-Each example directory follows this structure:
-```
-example-name/
-├── README.md.tmpl          # Template with {{include:...}} directives
-├── README.md               # Generated documentation (do not edit directly)
-├── operator/               # Kubernetes Operator deployment configs
-│   └── *.yaml
-└── helm/                   # Helm chart deployment configs
-    └── *.yaml
-```
+### Build System
+
+1. **Kustomize overlays**: `_src/_overlays/*/operator/kustomization.yaml` references `../../../_base/operator`
+2. **build.sh**: Runs `kustomize build` and merges Helm values with `yq`
+3. **generate.sh**: Processes `README.md.tmpl` with `{{include:path}}` directives
 
 ## Workflow
 
-1. Edit YAML files in `operator/` or `helm/` directories
-2. Edit `README.md.tmpl` if documentation text needs changes
-3. Run `make generate` to regenerate README.md
-4. Verify with `make verify` before committing
+### Creating a New Example
+
+```bash
+./_src/new-example.sh my-example "Description of the example"
+# Edit _src/_overlays/my-example/operator/kustomization.yaml
+# Add patches in _src/_overlays/my-example/operator/patches/
+# Edit _src/_overlays/my-example/README.md.tmpl
+make all
+```
+
+### Modifying an Example
+
+1. Edit source files in `_src/_overlays/<example>/`
+2. Run `make all` to rebuild `examples/`
+3. Commit both `_src/_overlays/` and `examples/` changes

@@ -21,9 +21,27 @@ backend:
       password: ${POSTGRES_PASSWORD}
 ```
 
-## Example: Using the RHDH Operator
+## Quick Start
 
-### 1. Create the Database Secret
+### Using the RHDH Operator
+
+```bash
+cd operator/
+./install.sh
+```
+
+### Using Helm
+
+```bash
+cd helm/
+./install.sh
+```
+
+## Configuration Details
+
+### Database Secret
+
+Both deployment methods use the same secret structure:
 
 ```yaml
 apiVersion: v1
@@ -38,70 +56,39 @@ stringData:
   POSTGRES_USER: rhdh_user
   POSTGRES_PASSWORD: changeme
 
-```
-
-### 2. Create the App Config ConfigMap
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: rhdh-app-config
-data:
-  app-config-rhdh.yaml: |
-    backend:
-      database:
-        client: pg
-        pluginDivisionMode: schema
-        connection:
-          database: ${POSTGRES_DB}
-          host: ${POSTGRES_HOST}
-          port: ${POSTGRES_PORT}
-          user: ${POSTGRES_USER}
-          password: ${POSTGRES_PASSWORD}
 
 ```
 
-### 3. Create the Backstage CR
+### Operator: Backstage CR Patch
+
+The operator deployment patches the base Backstage CR to:
+- Add the database secret to environment variables
+- Add a database-specific ConfigMap
+- Disable the local database
 
 ```yaml
 apiVersion: rhdh.redhat.com/v1alpha3
 kind: Backstage
 metadata:
-  name: developer-hub
+  name: my-rhdh
 spec:
   application:
     appConfig:
+      mountPath: /opt/app-root/src
       configMaps:
-        - name: rhdh-app-config
+        - name: my-rhdh-app-config
+        - name: my-rhdh-db-config
     extraEnvs:
       secrets:
+        - name: my-rhdh-secrets
         - name: rhdh-database-secret
   database:
     enableLocalDb: false
-
 ```
 
-## Example: Using Helm Chart
+### Helm: Values Overlay
 
-### 1. Create the Database Secret
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: rhdh-database-secret
-type: Opaque
-stringData:
-  POSTGRES_DB: rhdh
-  POSTGRES_HOST: my-postgres.postgres.svc
-  POSTGRES_PORT: "5432"
-  POSTGRES_USER: rhdh_user
-  POSTGRES_PASSWORD: changeme
-
-```
-
-### 2. Install with values.yaml
+The helm deployment merges these values with the base configuration:
 
 ```yaml
 global:
@@ -129,6 +116,7 @@ upstream:
 
   postgresql:
     enabled: false
+
 
 ```
 
@@ -168,5 +156,3 @@ psql "host=${POSTGRES_HOST} port=${POSTGRES_PORT} dbname=${POSTGRES_DB} user=${P
 
 - [Backstage: Switching from SQLite to PostgreSQL](https://backstage.io/docs/tutorials/switching-sqlite-postgres/#using-a-single-database)
 - [RHDH: Configuring External PostgreSQL](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/administration_guide_for_red_hat_developer_hub/assembly-configuring-external-postgresql-databases)
-
-

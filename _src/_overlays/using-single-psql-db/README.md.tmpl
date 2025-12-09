@@ -9,50 +9,52 @@ In many production environments, this is not allowed due to security policies. T
 The key setting is `pluginDivisionMode: schema` which tells RHDH to use schemas instead of separate databases for plugin data isolation.
 
 ```yaml
-backend:
-  database:
-    client: pg
-    pluginDivisionMode: schema
-    connection:
-      database: ${POSTGRES_DB}
-      host: ${POSTGRES_HOST}
-      port: ${POSTGRES_PORT}
-      user: ${POSTGRES_USER}
-      password: ${POSTGRES_PASSWORD}
+{{include:operator/configs/app-config.yaml}}
 ```
 
-## Example: Using the RHDH Operator
+## Quick Start
 
-### 1. Create the Database Secret
+### Using the RHDH Operator
+
+```bash
+cd operator/
+./install.sh
+```
+
+### Using Helm
+
+```bash
+cd helm/
+./install.sh
+```
+
+## Configuration Details
+
+### Database Secret
+
+Both deployment methods use the same secret structure:
 
 ```yaml
 {{include:operator/secret.yaml}}
 ```
 
-### 2. Create the App Config ConfigMap
+### Operator: Backstage CR Patch
+
+The operator deployment patches the base Backstage CR to:
+- Add the database secret to environment variables
+- Add a database-specific ConfigMap
+- Disable the local database
 
 ```yaml
-{{include:operator/app-config.yaml}}
+{{include:operator/patches/backstage-patch.yaml}}
 ```
 
-### 3. Create the Backstage CR
+### Helm: Values Overlay
+
+The helm deployment merges these values with the base configuration:
 
 ```yaml
-{{include:operator/backstage.yaml}}
-```
-
-## Example: Using Helm Chart
-
-### 1. Create the Database Secret
-
-```yaml
-{{include:helm/secret.yaml}}
-```
-
-### 2. Install with values.yaml
-
-```yaml
-{{include:helm/values.yaml}}
+{{include:helm/values-overlay.yaml}}
 ```
 
 ## Database Requirements
@@ -91,4 +93,3 @@ psql "host=${POSTGRES_HOST} port=${POSTGRES_PORT} dbname=${POSTGRES_DB} user=${P
 
 - [Backstage: Switching from SQLite to PostgreSQL](https://backstage.io/docs/tutorials/switching-sqlite-postgres/#using-a-single-database)
 - [RHDH: Configuring External PostgreSQL](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/administration_guide_for_red_hat_developer_hub/assembly-configuring-external-postgresql-databases)
-

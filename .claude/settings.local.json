@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kustomize build:*)",
+      "Bash(chmod:*)",
+      "Bash(make all:*)",
+      "Bash(ls:*)",
+      "Bash(make generate:*)"
+    ]
+  }
+}
