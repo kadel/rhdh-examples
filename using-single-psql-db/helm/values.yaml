@@ -1,0 +1,27 @@
+global:
+  dynamic:
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins: []
+
+upstream:
+  backstage:
+    appConfig:
+      backend:
+        database:
+          client: pg
+          pluginDivisionMode: schema
+          connection:
+            database: ${POSTGRES_DB}
+            host: ${POSTGRES_HOST}
+            port: ${POSTGRES_PORT}
+            user: ${POSTGRES_USER}
+            password: ${POSTGRES_PASSWORD}
+
+    extraEnvVarsSecrets:
+      - rhdh-database-secret
+
+  postgresql:
+    enabled: false
+
+

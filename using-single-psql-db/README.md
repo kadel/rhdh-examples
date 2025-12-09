@@ -1,0 +1,172 @@
+# Using a Single PostgreSQL Database with RHDH
+
+By default, RHDH (Red Hat Developer Hub / Backstage) creates **multiple databases** - one for each plugin that requires database storage. This requires the database user to have permissions to create new databases.
+
+In many production environments, this is not allowed due to security policies. To work around this, you can configure RHDH to use a **single database** with separate **schemas** for each plugin instead.
+
+## Key Configuration
+
+The key setting is `pluginDivisionMode: schema` which tells RHDH to use schemas instead of separate databases for plugin data isolation.
+
+```yaml
+backend:
+  database:
+    client: pg
+    pluginDivisionMode: schema
+    connection:
+      database: ${POSTGRES_DB}
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+```
+
+## Example: Using the RHDH Operator
+
+### 1. Create the Database Secret
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rhdh-database-secret
+type: Opaque
+stringData:
+  POSTGRES_DB: rhdh
+  POSTGRES_HOST: my-postgres.postgres.svc
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: rhdh_user
+  POSTGRES_PASSWORD: changeme
+
+```
+
+### 2. Create the App Config ConfigMap
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rhdh-app-config
+data:
+  app-config-rhdh.yaml: |
+    backend:
+      database:
+        client: pg
+        pluginDivisionMode: schema
+        connection:
+          database: ${POSTGRES_DB}
+          host: ${POSTGRES_HOST}
+          port: ${POSTGRES_PORT}
+          user: ${POSTGRES_USER}
+          password: ${POSTGRES_PASSWORD}
+
+```
+
+### 3. Create the Backstage CR
+
+```yaml
+apiVersion: rhdh.redhat.com/v1alpha3
+kind: Backstage
+metadata:
+  name: developer-hub
+spec:
+  application:
+    appConfig:
+      configMaps:
+        - name: rhdh-app-config
+    extraEnvs:
+      secrets:
+        - name: rhdh-database-secret
+  database:
+    enableLocalDb: false
+
+```
+
+## Example: Using Helm Chart
+
+### 1. Create the Database Secret
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rhdh-database-secret
+type: Opaque
+stringData:
+  POSTGRES_DB: rhdh
+  POSTGRES_HOST: my-postgres.postgres.svc
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: rhdh_user
+  POSTGRES_PASSWORD: changeme
+
+```
+
+### 2. Install with values.yaml
+
+```yaml
+global:
+  dynamic:
+    includes:
+      - dynamic-plugins.default.yaml
+    plugins: []
+
+upstream:
+  backstage:
+    appConfig:
+      backend:
+        database:
+          client: pg
+          pluginDivisionMode: schema
+          connection:
+            database: ${POSTGRES_DB}
+            host: ${POSTGRES_HOST}
+            port: ${POSTGRES_PORT}
+            user: ${POSTGRES_USER}
+            password: ${POSTGRES_PASSWORD}
+
+    extraEnvVarsSecrets:
+      - rhdh-database-secret
+
+  postgresql:
+    enabled: false
+
+```
+
+## Database Requirements
+
+When using `pluginDivisionMode: schema`, the database user needs:
+
+- **CREATE** privilege on the database (to create schemas)
+- **USAGE** privilege on schemas
+- **CREATE** privilege on schemas (for tables)
+
+The user does **NOT** need:
+- CREATEDB privilege
+- Access to the `postgres` default database
+
+## Troubleshooting
+
+### Error: no pg_hba.conf entry
+
+```
+Error: no pg_hba.conf entry for host "x.x.x.x", user "user", database "dbname", no encryption
+```
+
+This error means PostgreSQL is rejecting non-SSL connections. Solutions:
+1. Enable SSL in your RHDH configuration (recommended)
+2. Modify `pg_hba.conf` to allow non-SSL connections (not recommended for production)
+
+### Verifying the Connection
+
+You can test the connection from a pod in the same namespace:
+
+```bash
+psql "host=${POSTGRES_HOST} port=${POSTGRES_PORT} dbname=${POSTGRES_DB} user=${POSTGRES_USER} sslmode=require"
+```
+
+## References
+
+- [Backstage: Switching from SQLite to PostgreSQL](https://backstage.io/docs/tutorials/switching-sqlite-postgres/#using-a-single-database)
+- [RHDH: Configuring External PostgreSQL](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/administration_guide_for_red_hat_developer_hub/assembly-configuring-external-postgresql-databases)
+
+

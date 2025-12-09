@@ -1,0 +1,15 @@
+apiVersion: rhdh.redhat.com/v1alpha3
+kind: Backstage
+metadata:
+  name: developer-hub
+spec:
+  application:
+    appConfig:
+      configMaps:
+        - name: rhdh-app-config
+    extraEnvs:
+      secrets:
+        - name: rhdh-database-secret
+  database:
+    enableLocalDb: false
+
