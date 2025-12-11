@@ -1,0 +1,3 @@
+_src/_base/helm/configs
+_src/_base/operator/configs
+_src/_base/helm/values.yaml

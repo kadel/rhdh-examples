@@ -61,10 +61,7 @@ stringData:
 
 ### Operator: Backstage CR Patch
 
-The operator deployment patches the base Backstage CR to:
-- Add the database secret to environment variables
-- Add a database-specific ConfigMap
-- Disable the local database
+The operator deployment patches the base Backstage CR to disable the local database:
 
 ```yaml
 apiVersion: rhdh.redhat.com/v1alpha3
@@ -72,52 +69,18 @@ kind: Backstage
 metadata:
   name: my-rhdh
 spec:
-  application:
-    appConfig:
-      mountPath: /opt/app-root/src
-      configMaps:
-        - name: my-rhdh-app-config
-        - name: my-rhdh-db-config
-    extraEnvs:
-      secrets:
-        - name: my-rhdh-secrets
-        - name: rhdh-database-secret
   database:
     enableLocalDb: false
 ```
 
 ### Helm: Values Overlay
 
-The helm deployment merges these values with the base configuration:
+The helm deployment merges these values with the base configuration to disable the built-in PostgreSQL:
 
 ```yaml
-global:
-  dynamic:
-    includes:
-      - dynamic-plugins.default.yaml
-    plugins: []
-
 upstream:
-  backstage:
-    appConfig:
-      backend:
-        database:
-          client: pg
-          pluginDivisionMode: schema
-          connection:
-            database: ${POSTGRES_DB}
-            host: ${POSTGRES_HOST}
-            port: ${POSTGRES_PORT}
-            user: ${POSTGRES_USER}
-            password: ${POSTGRES_PASSWORD}
-
-    extraEnvVarsSecrets:
-      - rhdh-database-secret
-
   postgresql:
     enabled: false
-
-
 ```
 
 ## Database Requirements

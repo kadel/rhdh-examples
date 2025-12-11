@@ -5,7 +5,9 @@
       "Bash(chmod:*)",
       "Bash(make all:*)",
       "Bash(ls:*)",
-      "Bash(make generate:*)"
+      "Bash(make generate:*)",
+      "Bash(tree:*)",
+      "Bash(git log:*)"
     ]
   }
 }

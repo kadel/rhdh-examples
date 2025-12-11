@@ -18,8 +18,14 @@ CLUSTER_ROUTER_BASE=$(oc get route console -n openshift-console -o=jsonpath='{.s
 
 echo "Using cluster router base: https://$CLUSTER_ROUTER_BASE"
 
+# Copy the configs to the script directory
+rm -rf "$SCRIPT_DIR/configs"
+cp -r "$SCRIPT_DIR/../configs" "$SCRIPT_DIR/configs"
+
 # Apply extra app config
 oc apply -k "$SCRIPT_DIR"
+
+$SCRIPT_DIR/generate_merged_values.sh > "$SCRIPT_DIR/values.yaml"
 
 # Install the Red Hat Developer Hub Helm chart
 helm upgrade --install rhdh openshift-helm-charts/redhat-developer-hub \

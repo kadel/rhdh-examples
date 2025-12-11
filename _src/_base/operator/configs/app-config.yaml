@@ -1,7 +1,0 @@
-app:
-  title: My RHDH App
-
-auth:
-  providers:
-    guest:
-      dangerouslyAllowOutsideDevelopment: true

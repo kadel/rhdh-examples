@@ -1,0 +1,44 @@
+## Troubleshooting
+
+### Checking Pod Status
+
+```bash
+# For Helm deployments
+oc get pods -l app.kubernetes.io/name=developer-hub
+
+# For Operator deployments
+oc get pods -l rhdh.redhat.com/app=backstage-my-rhdh
+```
+
+### Viewing Logs
+
+```bash
+# Get logs from the main container
+oc logs -l app.kubernetes.io/name=backstage -c backstage-backend
+
+# Follow logs in real-time
+oc logs -f -l app.kubernetes.io/name=backstage -c backstage-backend
+```
+
+### Verifying ConfigMaps and Secrets
+
+```bash
+# List ConfigMaps
+oc get configmaps | grep rhdh
+
+# View ConfigMap content
+oc get configmap my-rhdh-app-config -o yaml
+
+# List Secrets
+oc get secrets | grep rhdh
+```
+
+### Restarting the Deployment
+
+```bash
+# For Helm
+oc rollout restart deployment/rhdh-developer-hub
+
+# For Operator
+oc rollout restart deployment/backstage-my-rhdh
+```

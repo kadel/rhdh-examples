@@ -9,53 +9,9 @@ In many production environments, this is not allowed due to security policies. T
 The key setting is `pluginDivisionMode: schema` which tells RHDH to use schemas instead of separate databases for plugin data isolation.
 
 ```yaml
-{{include:operator/configs/app-config.yaml}}
+{{include:configs/app-config.yaml}}
 ```
 
-## Quick Start
-
-### Using the RHDH Operator
-
-```bash
-cd operator/
-./install.sh
-```
-
-### Using Helm
-
-```bash
-cd helm/
-./install.sh
-```
-
-## Configuration Details
-
-### Database Secret
-
-Both deployment methods use the same secret structure:
-
-```yaml
-{{include:operator/secret.yaml}}
-```
-
-### Operator: Backstage CR Patch
-
-The operator deployment patches the base Backstage CR to:
-- Add the database secret to environment variables
-- Add a database-specific ConfigMap
-- Disable the local database
-
-```yaml
-{{include:operator/patches/backstage-patch.yaml}}
-```
-
-### Helm: Values Overlay
-
-The helm deployment merges these values with the base configuration:
-
-```yaml
-{{include:helm/values-overlay.yaml}}
-```
 
 ## Database Requirements
 
@@ -69,25 +25,6 @@ The user does **NOT** need:
 - CREATEDB privilege
 - Access to the `postgres` default database
 
-## Troubleshooting
-
-### Error: no pg_hba.conf entry
-
-```
-Error: no pg_hba.conf entry for host "x.x.x.x", user "user", database "dbname", no encryption
-```
-
-This error means PostgreSQL is rejecting non-SSL connections. Solutions:
-1. Enable SSL in your RHDH configuration (recommended)
-2. Modify `pg_hba.conf` to allow non-SSL connections (not recommended for production)
-
-### Verifying the Connection
-
-You can test the connection from a pod in the same namespace:
-
-```bash
-psql "host=${POSTGRES_HOST} port=${POSTGRES_PORT} dbname=${POSTGRES_DB} user=${POSTGRES_USER} sslmode=require"
-```
 
 ## References
 
