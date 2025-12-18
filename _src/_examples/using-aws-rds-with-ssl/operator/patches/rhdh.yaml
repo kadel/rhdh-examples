@@ -1,0 +1,12 @@
+apiVersion: rhdh.redhat.com/v1alpha3
+kind: Backstage
+metadata:
+  name: my-rhdh
+spec:
+  database:
+    enableLocalDb: false
+  application:
+    extraFiles:
+      mountPath: /opt/app-root/src
+      secrets:
+        - name: aws-rds-ca-bundle

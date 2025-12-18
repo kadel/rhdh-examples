@@ -1,0 +1,60 @@
+# Using a Single PostgreSQL Database with RHDH
+
+By default, RHDH (Red Hat Developer Hub / Backstage) creates **multiple databases** - one for each plugin that requires database storage. This requires the database user to have permissions to create new databases.
+
+In many production environments, this is not allowed due to security policies. To work around this, you can configure RHDH to use a **single database** with separate **schemas** for each plugin instead.
+
+## Key Configuration
+
+The key settings are:
+
+- `pluginDivisionMode: schema`: Tells RHDH to use schemas instead of separate databases for plugin data isolation.
+- `ensureSchemaExists: true`: Ensures that Backstage attempts to create the necessary schemas if they don't exist.
+
+```yaml
+{{include:config/app-config.yaml}}
+```
+
+## Using SSL
+
+Depending on the configuration of the database, you may need to use SSL to connect to the database.
+If you are using AWS provided CA you will need to download the certificate bundle from https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL.html#UsingWithRDS.SSL.CertificatesAllRegions.
+Mount it to the container and set the `ca` property in the `connection` section of the `app-config.yaml` file.
+
+
+### Mounting the certificate bundle with Helm
+``` yaml
+{{include:helm/patches/values.yaml}}
+```
+
+
+## Database Requirements
+
+When using `pluginDivisionMode: schema`, the database user needs:
+
+- **CREATE** privilege on the database (to create schemas)
+- **USAGE** privilege on schemas
+- **CREATE** privilege on schemas (for tables)
+
+The user does **NOT** need:
+- CREATEDB privilege
+- Access to the `postgres` default database
+
+### Granting Privileges
+
+Run the following SQL commands as a database administrator to set up the user and grant the necessary privileges:
+
+```sql
+-- Create the database user (if not already created)
+CREATE USER rhdh_user WITH PASSWORD 'changeme';
+
+-- Create the database for RHDH
+CREATE DATABASE rhdh_db;
+
+-- Grant CREATE privilege on the database (allows creating schemas)
+GRANT CREATE ON DATABASE rhdh_db TO rhdh_user;
+```
+## References
+
+- [Backstage: Switching from SQLite to PostgreSQL](https://backstage.io/docs/tutorials/switching-sqlite-postgres/#using-a-single-database)
+- [RHDH: Configuring External PostgreSQL](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/administration_guide_for_red_hat_developer_hub/assembly-configuring-external-postgresql-databases)

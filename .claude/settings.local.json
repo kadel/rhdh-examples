@@ -7,7 +7,14 @@
       "Bash(ls:*)",
       "Bash(make generate:*)",
       "Bash(tree:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(yq:*)",
+      "Bash(ln:*)",
+      "Bash(kubectl kustomize:*)",
+      "Bash(node _src/build.js:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(cat:*)"
     ]
   }
 }

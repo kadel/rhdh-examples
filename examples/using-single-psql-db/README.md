@@ -7,81 +7,22 @@ In many production environments, this is not allowed due to security policies. T
 ## Key Configuration
 
 The key setting is `pluginDivisionMode: schema` which tells RHDH to use schemas instead of separate databases for plugin data isolation.
+Additionally, `ensureSchemaExists: true` ensures that the required schemas are created if they don't already exist.
 
 ```yaml
 backend:
   database:
     client: pg
     pluginDivisionMode: schema
+    ensureSchemaExists: true
     connection:
-      database: ${POSTGRES_DB}
+      database: ${POSTGRES_DATABASE}
       host: ${POSTGRES_HOST}
       port: ${POSTGRES_PORT}
       user: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
 ```
 
-## Quick Start
-
-### Using the RHDH Operator
-
-```bash
-cd operator/
-./install.sh
-```
-
-### Using Helm
-
-```bash
-cd helm/
-./install.sh
-```
-
-## Configuration Details
-
-### Database Secret
-
-Both deployment methods use the same secret structure:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: rhdh-database-secret
-type: Opaque
-stringData:
-  POSTGRES_DB: rhdh
-  POSTGRES_HOST: my-postgres.postgres.svc
-  POSTGRES_PORT: "5432"
-  POSTGRES_USER: rhdh_user
-  POSTGRES_PASSWORD: changeme
-
-
-```
-
-### Operator: Backstage CR Patch
-
-The operator deployment patches the base Backstage CR to disable the local database:
-
-```yaml
-apiVersion: rhdh.redhat.com/v1alpha3
-kind: Backstage
-metadata:
-  name: my-rhdh
-spec:
-  database:
-    enableLocalDb: false
-```
-
-### Helm: Values Overlay
-
-The helm deployment merges these values with the base configuration to disable the built-in PostgreSQL:
-
-```yaml
-upstream:
-  postgresql:
-    enabled: false
-```
 
 ## Database Requirements
 
@@ -95,27 +36,25 @@ The user does **NOT** need:
 - CREATEDB privilege
 - Access to the `postgres` default database
 
-## Troubleshooting
+### Granting Privileges
 
-### Error: no pg_hba.conf entry
+Run the following SQL commands as a database administrator to set up the user and grant the necessary privileges:
 
+```sql
+-- Create the database user (if not already created)
+CREATE USER rhdh_user WITH PASSWORD 'changeme';
+
+-- Create the database for RHDH
+CREATE DATABASE rhdh_db;
+
+-- Grant CREATE privilege on the database (allows creating schemas)
+GRANT CREATE ON DATABASE rhdh_db TO rhdh_user;
 ```
-Error: no pg_hba.conf entry for host "x.x.x.x", user "user", database "dbname", no encryption
-```
 
-This error means PostgreSQL is rejecting non-SSL connections. Solutions:
-1. Enable SSL in your RHDH configuration (recommended)
-2. Modify `pg_hba.conf` to allow non-SSL connections (not recommended for production)
+Replace `rhdh_user` and `rhdh_db` with your actual username and database name.
 
-### Verifying the Connection
-
-You can test the connection from a pod in the same namespace:
-
-```bash
-psql "host=${POSTGRES_HOST} port=${POSTGRES_PORT} dbname=${POSTGRES_DB} user=${POSTGRES_USER} sslmode=require"
-```
 
 ## References
 
 - [Backstage: Switching from SQLite to PostgreSQL](https://backstage.io/docs/tutorials/switching-sqlite-postgres/#using-a-single-database)
-- [RHDH: Configuring External PostgreSQL](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/administration_guide_for_red_hat_developer_hub/assembly-configuring-external-postgresql-databases)
+- [RHDH: Configuring External PostgreSQL](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/configuring_red_hat_developer_hub/configuring-external-postgresql-databases)

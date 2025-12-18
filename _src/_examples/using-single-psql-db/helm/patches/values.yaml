@@ -1,3 +1,13 @@
 upstream:
   postgresql:
     enabled: false
+
+  backstage:
+    # This is required in order to remove POSTGRESQL_ADMIN_PASSWORD from the environment variables
+    # https://github.com/redhat-developer/rhdh-chart/blob/dba8d637567b430d6c0b95734b69198ac0b2eb4c/charts/backstage/values.yaml#L127-L137
+    extraEnvVars:
+      - name: BACKEND_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: backend-secret
+            name: '{{ include "janus-idp.backend-secret-name" $ }}'

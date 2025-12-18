@@ -1,0 +1,14 @@
+backend:
+  database:
+    client: pg
+    pluginDivisionMode: schema
+    ensureSchemaExists: true
+    connection:
+      database: ${POSTGRES_DATABASE}
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      ssl:
+        sslmode: verify-full
+        sslrootcert: /opt/app-root/src/global-bundle.pem

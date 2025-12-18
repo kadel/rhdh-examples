@@ -1,0 +1,23 @@
+{
+  "name": "rhdh-examples",
+  "version": "1.0.0",
+  "description": "Red Hat Developer Hub deployment examples",
+  "private": true,
+  "scripts": {
+    "build": "node _src/build.js",
+    "clean": "rm -rf examples"
+  },
+  "keywords": [
+    "rhdh",
+    "backstage",
+    "openshift",
+    "kubernetes"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "yaml": "^2.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
