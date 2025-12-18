@@ -32,6 +32,10 @@ When using `pluginDivisionMode: schema`, the database user needs:
 - **USAGE** privilege on schemas
 - **CREATE** privilege on schemas (for tables)
 
+Due to the nature of the Backstage architecture the user requires permissions to schemas and tables.
+This is due to the fact that Backstage plugins are installed as separate entities and each plugin has its own schema.
+Without these permissions the plugins requiring database will not be able to install and will fail.
+
 The user does **NOT** need:
 - CREATEDB privilege
 - Access to the `postgres` default database
