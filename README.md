@@ -2,6 +2,13 @@
 
 A collection of examples demonstrating various configurations and deployment patterns for Red Hat Developer Hub (RHDH).
 
+## Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [Plugin Development Getting Started](docs/plugin-getting-started.md) | Complete guide for creating, developing, and packaging dynamic plugins for RHDH |
+
+## Examples
 
 | Example | Description |
 |---------|-------------|
