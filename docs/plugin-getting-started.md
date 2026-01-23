@@ -2,6 +2,17 @@
 
 This guide outlines the process of creating, developing, and packaging a dynamic plugin for Red Hat Developer Hub (RHDH).
 
+## Learning Objectives
+
+By the end of this guide, you will be able to:
+
+- Set up a Backstage development environment with the correct version for your target RHDH instance
+- Create a new frontend plugin using the Backstage CLI
+- Build common plugin components including pages and entity cards
+- Configure the local development harness with RHDH theming
+- Export and package a plugin for dynamic loading using the RHDH CLI
+- Configure plugin wiring for routes, menu items, and mount points
+
 ## Prerequisites
 
 Before starting, ensure the following are available:
@@ -50,6 +61,8 @@ cd rhdh-plugin-dev
 npx @backstage/create-app@0.7.3 --path .
 ```
 
+> [!IMPORTANT]
+> **Checkpoint:** Your workspace should now contain `packages/app/`, `packages/backend/`, and `plugins/` directories, along with a root `package.json` with Backstage dependencies.
 
 ## Step 3: Create Frontend Plugin
 
@@ -61,6 +74,9 @@ yarn new
 
 When prompted, select `frontend-plugin` and enter a plugin ID (e.g., `simple-example`).
 The plugin will be created at `plugins/simple-example/`.
+
+> [!IMPORTANT]
+> **Checkpoint:** The `plugins/simple-example/` directory should exist with `src/`, `dev/`, and `package.json` files.
 
 ### Add RHDH Theme to Plugin Development Harness
 
@@ -88,7 +104,8 @@ createDevApp()
   .render();
 ```
 
-> **Note:** This configuration is only for the local development harness (`dev/index.tsx`). When deployed to RHDH, the application shell provides theming automatically.
+> [!NOTE]
+> This configuration is only for the local development harness (`dev/index.tsx`). When deployed to RHDH, the application shell provides theming automatically.
 
 Now you can start the development server and see your plugin in the browser.
 
@@ -96,6 +113,9 @@ Now you can start the development server and see your plugin in the browser.
 cd plugins/simple-example
 yarn start
 ```
+
+> [!IMPORTANT]
+> **Checkpoint:** The development server should start and open a browser at `http://localhost:3000`. You should see the plugin page with RHDH theming applied.
 
 ## Step 4: Implement Plugin Components
 
@@ -159,6 +179,9 @@ Export all components in `src/index.ts` so they can be loaded dynamically:
 // src/index.ts
 export { simpleExamplePlugin, SimpleExamplePage, ExampleCard } from './plugin';
 ```
+
+> [!IMPORTANT]
+> **Checkpoint:** Your plugin should have the following new files: `src/components/ExampleCard/ExampleCard.tsx` and `src/components/ExampleCard/index.ts`. The `src/plugin.ts` should export `ExampleCard`, and `src/index.ts` should re-export it.
 
 ## Step 5: Test Plugin Locally
 
@@ -232,6 +255,9 @@ Run the development server:
 yarn start
 ```
 
+> [!IMPORTANT]
+> **Checkpoint:** Navigate to `http://localhost:3000/simple-example/entity` in your browser. You should see the Entity Page with your `ExampleCard` component displaying "Entity: example-service".
+
 ## Step 6: Export as Dynamic Plugin
 
 Once your plugin is ready, export it as a dynamic plugin using the RHDH CLI. This command prepares the plugin for dynamic loading by generating the required Scalprum and Webpack federation configurations.
@@ -249,6 +275,9 @@ The output will be generated in the `dist-dynamic/` directory:
 - `dist-scalprum/`: Contains the Webpack federated modules.
 - `package.json`: A modified version of your `package.json` optimized for dynamic loading.
 
+> [!IMPORTANT]
+> **Checkpoint:** The `dist-dynamic/` directory should exist and contain `dist-scalprum/` with JavaScript bundles and a `package.json` file.
+
 ## Step 7: Package and Publish
 
 ### Package as an OCI Image
@@ -264,6 +293,9 @@ npx @red-hat-developer-hub/cli@latest plugin package \
 podman push quay.io/<namespace>/simple-example:v0.1.0
 ```
 
+> [!IMPORTANT]
+> **Checkpoint:** Run `podman images | grep simple-example` to verify the image was created. After pushing, verify the image exists in your container registry.
+
 ### Test Locally with RHDH Local
 
 If you are using [RHDH Local](https://github.com/redhat-developer/rhdh-local/) for testing, you can copy the `dist-dynamic` directory directly into the `local-plugins` folder.
@@ -272,6 +304,9 @@ If you are using [RHDH Local](https://github.com/redhat-developer/rhdh-local/) f
 # Copy the dynamic distribution to RHDH Local
 cp -r dist-dynamic/ <RHDH_LOCAL_PATH>/local-plugins/simple-example
 ```
+
+> [!IMPORTANT]
+> **Checkpoint:** The `local-plugins/simple-example/` directory in your RHDH Local installation should contain the plugin files from `dist-dynamic/`, including the `dist-scalprum/` directory and `package.json`.
 
 ## Step 8: Configure Plugin Wiring
 
@@ -312,6 +347,9 @@ plugins:
   #   disabled: false
   #   pluginConfig: ... (same as above)
 ```
+
+> [!IMPORTANT]
+> **Checkpoint:** After restarting RHDH, you should see "Simple Example" in the sidebar menu. Clicking it should display your plugin page. Navigate to any Component entity page to verify the `ExampleCard` appears in the Overview tab.
 
 ### Additional Resources
 
