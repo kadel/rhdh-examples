@@ -157,7 +157,6 @@ In `src/plugin.ts`, add the new component to the plugin.
 ```tsx
 // src/plugin.ts
 import { createComponentExtension } from '@backstage/core-plugin-api';
-import { simpleExamplePlugin } from './plugin'; // This is where the plugin instance is defined
 
 // ...
 // ...
@@ -186,6 +185,11 @@ export { simpleExamplePlugin, SimpleExamplePage, ExampleCard } from './plugin';
 ## Step 5: Test Plugin Locally
 
 To see your component card in the development harness, update the `dev/index.tsx` file to include the new component card.
+
+Add backstage dependencies
+```
+yarn add @backstage/catalog-model  @backstage/plugin-catalog-react
+```
 
 ```tsx
 // dev/index.tsx
