@@ -1,0 +1,12 @@
+app:
+  title: My RHDH App
+
+auth:
+  providers:
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
+i18n:
+  locales:
+    - en
+  overrides:
+    - /opt/app-root/src/translations/all-translations.json

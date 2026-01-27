@@ -1,0 +1,13 @@
+{
+  "catalog-react": {
+    "en": {
+        "entityKindPicker.title": "MyKind",
+        "entityTypePicker.title": "MyType",
+        "entityOwnerPicker.title": "MyOwner",
+        "entityLifecyclePicker.title": "MyLifecycle",
+        "fields.entityTagsPicker.title": "MyTags",
+        "entityNamespacePicker.title": "MyNamespace",
+        "entityProcessingStatusPicker.title": "MyProcessingStatus"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+apiVersion: rhdh.redhat.com/v1alpha3
+kind: Backstage
+metadata:
+  name: my-rhdh
+spec:
+  application:
+    extraFiles:
+      configMaps:
+        - name: all-translations
+          mountPath: /opt/app-root/src/translations
