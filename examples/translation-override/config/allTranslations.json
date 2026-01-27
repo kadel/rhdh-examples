@@ -6,8 +6,7 @@
         "entityOwnerPicker.title": "MyOwner",
         "entityLifecyclePicker.title": "MyLifecycle",
         "fields.entityTagsPicker.title": "MyTags",
-        "entityNamespacePicker.title": "MyNamespace",
-        "entityProcessingStatusPicker.title": "MyProcessingStatus"
+        "entityNamespacePicker.title": "MyNamespace"
     }
   }
 }
