@@ -1,0 +1,19 @@
+global:
+  dynamic:
+    includes:
+      - dynamic-plugins.default.yaml
+
+    plugins: []
+
+upstream:
+  backstage:
+    extraEnvVarsSecrets:
+      - my-rhdh-secrets
+    appConfig:
+      app:
+        title: My RHDH App
+
+      auth:
+        providers:
+          guest:
+            dangerouslyAllowOutsideDevelopment: true
