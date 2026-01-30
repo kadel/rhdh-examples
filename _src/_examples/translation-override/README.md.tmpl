@@ -1,20 +1,77 @@
-# Default RHDH Installation
+# Translation Override Example
 
-This example provides a minimal default installation of Red Hat Developer Hub (RHDH) with no additional configuration. It uses the built-in local PostgreSQL database and enables guest authentication for development purposes.
+This example demonstrates how to customize UI labels and text in Red Hat Developer Hub (RHDH) using the i18n translation override feature. This allows you to rename filter labels, buttons, and other UI elements without modifying the source code.
 
 ## What's Included
 
-- **Local PostgreSQL Database**: Uses the built-in local database (no external database setup required)
-- **Guest Authentication**: Enabled for development/testing (not recommended for production)
-- **Route Enabled**: Exposes RHDH via an OpenShift route
+- **Custom Translation File**: JSON file with translation overrides for catalog picker labels
+- **ConfigMap Mount**: Mounts the translation file into the RHDH container
+- **i18n Configuration**: Configures RHDH to load the custom translations
 
-## Configuration
+## How It Works
 
-The default app configuration:
+RHDH supports i18n (internationalization) with the ability to override default translations. By providing a JSON file with custom translations and mounting it into the container, you can customize any translatable text in the UI.
+
+### Translation File Format
+
+The translation file uses a nested structure: `plugin-id` -> `locale` -> `translation-key`:
+
+```json
+{{include:config/allTranslations.json}}
+```
+
+In this example, the catalog filter labels are renamed:
+- "Kind" becomes "MyKind"
+- "Type" becomes "MyType"
+- "Owner" becomes "MyOwner"
+- etc.
+
+### App Configuration
+
+The `app-config.yaml` configures RHDH to load the translation overrides:
 
 ```yaml
-{{include:../../_base/config/app-config.yaml}}
+{{include:config/app-config.yaml}}
 ```
+
+The `i18n.overrides` array points to the mounted translation file location inside the container.
+
+## Configuration Details
+
+### ConfigMap for Translations
+
+The translation file is packaged as a ConfigMap:
+
+```yaml
+{{include:config/kustomization.yaml}}
+```
+
+### Helm Configuration
+
+For Helm deployments, the ConfigMap is mounted as an extra volume:
+
+```yaml
+{{include:helm/patches/values.yaml}}
+```
+
+### Operator Configuration
+
+For Operator deployments, the ConfigMap is mounted via `extraFiles`:
+
+```yaml
+{{include:operator/patches/rhdh.yaml}}
+```
+
+## Finding Translation Keys
+
+To find available translation keys for a plugin:
+
+1. Check the plugin's source code for `useTranslationRef` usage
+2. Look for `*Translation.ts` files in the plugin package
+3. Common plugins with translations:
+   - `catalog-react`: Catalog UI components
+   - `scaffolder`: Software Templates UI
+   - `techdocs`: TechDocs UI
 
 ## Installation
 
@@ -50,16 +107,8 @@ cd operator
 ./uninstall.sh
 ```
 
-## Next Steps
-
-This default installation is suitable for development and testing. For production deployments, consider:
-
-- [Using an external PostgreSQL database](../using-single-psql-db/)
-- Configuring proper authentication (GitHub, GitLab, OIDC, etc.)
-- Setting up TLS certificates
-- Configuring dynamic plugins
-
 ## References
 
+- [RHDH Localization Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/customizing_red_hat_developer_hub/assembly-localization-in-rhdh_assembly-localization-in-rhdh#prov-overriding-translations_assembly-localization-in-rhdh)
 - [RHDH Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub)
-- [Backstage Documentation](https://backstage.io/docs)
+- [Backstage i18n Documentation](https://backstage.io/docs/plugins/internationalization)
